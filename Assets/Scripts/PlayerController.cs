@@ -3,6 +3,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     private float speed = 5.0f;
+    private float jumpForce = 4.0f;
     private float horizontalInput;
 
     [SerializeField] private Rigidbody2D rb;
@@ -11,6 +12,7 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private bool isRunning;
     [SerializeField] private bool isJumping;
+    [SerializeField] private bool isFalling;
     [SerializeField] private bool isGrounded;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -25,28 +27,34 @@ public class PlayerController : MonoBehaviour
     {
         horizontalInput = Input.GetAxis("Horizontal");
 
-        if(Input.GetButtonDown("A") || Input.GetButtonDown("D"))
+        if(Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
         {
             transform.Translate(Vector3.right * Time.deltaTime * speed * horizontalInput);
-            isRunning = true;
+            animator.SetBool("isRunning", true);
+        }
+        else
+        {
+            animator.SetBool("isRunning", false);
         }
 
         if(Input.GetButtonDown("Jump"))
         {
-            rb.AddForce(Vector2.up, ForceMode2D.Impulse);
+            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             animator.SetBool("isJumping", true);
             isGrounded = false;
         }
 
         if(!isGrounded && rb.linearVelocityY <= 0.0f)
         {
-            RaycastHit2D hitInfo = Physics2D.Raycast(transform.position, Vector2.down, .1f);
+            animator.SetBool("isFalling", true);
+            animator.SetBool("isJumping", false);
+            RaycastHit2D hitInfo = Physics2D.Raycast(grounded.position, Vector2.down, .1f);
             if(hitInfo.collider != null)
             {
                 if (hitInfo.transform.CompareTag("Ground"))
                 {
                     isGrounded = true;
-                    animator.SetBool("isJumping", false);
+                    animator.SetBool("isFalling", false);
                 }
             }
         }
